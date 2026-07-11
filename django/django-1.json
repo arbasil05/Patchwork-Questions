@@ -1,0 +1,29 @@
+{
+  "title": "Fix the Missing Homepage Route",
+  "description": "🚨 Production Incident 🚨\n\nBasil just pushed a commit to production at a **$1 trillion tech company** exactly 3 minutes before the quarterly earnings call. The homepage view is perfectly implemented, but in a display of unmatched confidence, he forgot to connect it to the URL. Investors are refreshing the homepage and getting a 404 while Basil insists, \"It works on my machine.\"\n\nYour mission is to save the company by updating `urls.py`. Add the missing route so that visiting `/` returns the JSON response produced by the existing `home` view.\n\nOnly `urls.py` is editable.",
+  "editable_files": [
+    "urls.py"
+  ],
+  "files": [
+    {
+      "filename": "manage.py",
+      "content": "#!/usr/bin/env python\nimport os\nimport sys\n\ndef main():\n    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n    from django.core.management import execute_from_command_line\n    execute_from_command_line(sys.argv)\n\nif __name__ == '__main__':\n    main()\n"
+    },
+    {
+      "filename": "settings.py",
+      "content": "SECRET_KEY = 'django-insecure-patchwork-challenge-key'\n\nDEBUG = True\n\nALLOWED_HOSTS = ['*']\n\nINSTALLED_APPS = []\n\nMIDDLEWARE = []\n\nROOT_URLCONF = 'urls'\n\nTEMPLATES = [\n    {\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\n        'DIRS': [],\n        'APP_DIRS': False,\n        'OPTIONS': {'context_processors': []},\n    },\n]\n\nWSGI_APPLICATION = 'wsgi.application'\n\nDATABASES = {}\n\nUSE_TZ = True\n\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'\n"
+    },
+    {
+      "filename": "wsgi.py",
+      "content": "import os\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n\napplication = get_wsgi_application()\n"
+    },
+    {
+      "filename": "views.py",
+      "content": "from django.http import JsonResponse\n\ndef home(request):\n    \"\"\"Renders the homepage. This view is fully implemented and working.\"\"\"\n    return JsonResponse({\n        'message': 'Welcome to our website'\n    })\n"
+    },
+    {
+      "filename": "urls.py",
+      "content": "from django.urls import path\nimport views\n\n# BUG: The homepage view exists, but nothing routes '/' to it.\n\nurlpatterns = [\n    # TODO: Add the missing path() entry here.\n]\n"
+    }
+  ]
+}
