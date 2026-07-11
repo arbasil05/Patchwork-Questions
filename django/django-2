@@ -1,0 +1,31 @@
+{
+  "title": "The Feedback Form That Eats Data",
+  "description": "🚨 Beta Launch Incident 🚨\n\nBasil shipped a feedback endpoint for the new product launch. QA swears they're submitting real feedback, but the dashboard shows every single submission as empty. Basil's response: \"Weird, Postman says it sent fine.\"\n\nYour mission: fix the endpoint so POST requests with a JSON body are parsed correctly, validated, and routed to the right place. Both `urls.py` and `views.py` are editable.",
+  "editable_files": ["urls.py", "views.py"],
+  "files": [
+    {
+      "filename": "manage.py",
+      "content": "#!/usr/bin/env python\nimport os\nimport sys\n\ndef main():\n    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n    from django.core.management import execute_from_command_line\n    execute_from_command_line(sys.argv)\n\nif __name__ == '__main__':\n    main()\n"
+    },
+    {
+      "filename": "settings.py",
+      "content": "SECRET_KEY = 'django-insecure-patchwork-challenge-key'\n\nDEBUG = True\n\nALLOWED_HOSTS = ['*']\n\nINSTALLED_APPS = []\n\nMIDDLEWARE = []\n\nROOT_URLCONF = 'urls'\n\nTEMPLATES = [\n    {\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\n        'DIRS': [],\n        'APP_DIRS': False,\n        'OPTIONS': {'context_processors': []},\n    },\n]\n\nWSGI_APPLICATION = 'wsgi.application'\n\nDATABASES = {}\n\nUSE_TZ = True\n\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'\n"
+    },
+    {
+      "filename": "wsgi.py",
+      "content": "import os\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n\napplication = get_wsgi_application()\n"
+    },
+    {
+      "filename": "views.py",
+      "content": "from django.http import JsonResponse\n\n# BUG: this reads request.POST, which is only populated for\n# form-encoded bodies. JSON bodies never show up here.\ndef submit_feedback(request):\n    if request.method != 'POST':\n        return JsonResponse({'error': 'Method not allowed'}, status=405)\n\n    name = request.POST.get('name')\n    message = request.POST.get('message')\n\n    if not name or not message:\n        return JsonResponse({'error': 'name and message are required'}, status=400)\n\n    return JsonResponse({\n        'status': 'received',\n        'name': name,\n        'message': message\n    }, status=201)\n"
+    },
+    {
+      "filename": "urls.py",
+      "content": "from django.urls import path\nimport views\n\n# BUG: this references a function name that doesn't exist in views.py\nurlpatterns = [\n    path('api/feedback/', views.handle_feedback),\n]\n"
+    },
+    {
+      "filename": "test_feedback.py",
+      "content": "import os\nimport json\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n\nimport django\ndjango.setup()\n\nfrom django.test import Client\n\n\ndef test_get_not_allowed():\n    client = Client()\n    response = client.get('/api/feedback/')\n    assert response.status_code == 405\n\n\ndef test_valid_json_submission():\n    client = Client()\n    payload = {'name': 'Ada', 'message': 'Great tool!'}\n    response = client.post(\n        '/api/feedback/',\n        data=json.dumps(payload),\n        content_type='application/json'\n    )\n    assert response.status_code == 201\n    assert response.json() == {\n        'status': 'received',\n        'name': 'Ada',\n        'message': 'Great tool!'\n    }\n\n\ndef test_missing_fields_returns_400():\n    client = Client()\n    response = client.post(\n        '/api/feedback/',\n        data=json.dumps({'name': 'Ada'}),\n        content_type='application/json'\n    )\n    assert response.status_code == 400\n\n\ndef test_malformed_json_returns_400():\n    client = Client()\n    response = client.post(\n        '/api/feedback/',\n        data='{not valid json',\n        content_type='application/json'\n    )\n    assert response.status_code == 400\n"
+    }
+  ]
+}
