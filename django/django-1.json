@@ -19,11 +19,15 @@
     },
     {
       "filename": "views.py",
-      "content": "from django.http import JsonResponse\n\ndef home(request):\n    \"\"\"Renders the homepage. This view is fully implemented and working.\"\"\"\n    return JsonResponse({\n        'message': 'Welcome to our website'\n    })\n"
+      "content": "from django.http import JsonResponse\n\ndef home(request):\n    return JsonResponse({'message': 'Welcome to our website'})\n"
     },
     {
       "filename": "urls.py",
       "content": "from django.urls import path\nimport views\n\n# BUG: The homepage view exists, but nothing routes '/' to it.\n\nurlpatterns = [\n    # TODO: Add the missing path() entry here.\n]\n"
+    },
+    {
+      "filename": "test_homepage.py",
+      "content": "import os\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')\n\nimport django\ndjango.setup()\n\nfrom django.test import Client\n\n\ndef test_homepage_route_exists():\n    client = Client()\n    response = client.get('/')\n\n    assert response.status_code == 200\n    assert response.json() == {\n        'message': 'Welcome to our website'\n    }\n"
     }
   ]
 }
